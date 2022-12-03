@@ -14,13 +14,25 @@ the training dataset is shrunk to 10% of its original size making it suitable in
 sequence length so it is able to preform with very long or short sequences. Lastly, the model tunes most of its hyperparameters by itself so it is easy to use and does not
 require a separate validation set in order to train.
 
+Dataset link: https://drive.google.com/file/d/1bZD67DqXv9LkYo0HCCEXW4USjgjgqBAY/view?usp=sharing
+Trained models link: https://drive.google.com/file/d/1ObwqMIGE6A-gjr3lOTjaAWDhP0kbsJjL/view?usp=sharing
+
 ## Running Instructions:
 Prot_EC could be used to predict EC numbers on custom sequences by carring out the following steps:
 
-step1: 
-step2: Install pytorch by running the following in the terminal:
+step1: Clone the repository in the local machine
+
+step2: Download the models from the following directory and paste it into the project root:
+https://drive.google.com/file/d/1ObwqMIGE6A-gjr3lOTjaAWDhP0kbsJjL/view?usp=sharing
+
+step3: Install pytorch by running the following in the terminal:
+
 >> pip install torch==1.10.2+cpu torchvision==0.11.3+cpu --extra-index-url https://download.pytorch.org/whl/cpu
-step2: Install other necessary libraries by running the following in the terminal:
+
+step4: Install other necessary libraries by running the following in the terminal:
+
 >> pip install -r requirements.txt
-step3: Run evaluation on custom sequences: (Here "input_file" contains the user defined sequences and the correspoding EC numbers are saved in the "output_file")
+
+step5: Run evaluation on custom sequences: (Here "input_file" contains the user defined sequences and the correspoding EC numbers are saved in the "output_file")
+
 >> python3 test_eval.py --input_file=test_eval_data.txt --output_file=output.txt
