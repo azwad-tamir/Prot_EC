@@ -1,3 +1,4 @@
+# Importing required packages
 import numpy as np
 from sklearn.model_selection import train_test_split
 from transformers import DistilBertModel, BertModel, BertTokenizer, BertForMaskedLM, BertForPreTraining, \
@@ -24,6 +25,7 @@ from collections import Counter
 from sklearn.metrics import confusion_matrix, mean_squared_error, classification_report
 from sklearn.metrics import f1_score, matthews_corrcoef, accuracy_score, roc_auc_score, precision_score, recall_score, average_precision_score
 
+# Listing available GPUs
 mode = 0
 os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
@@ -58,7 +60,7 @@ for i in range(0,len(EC_total1)):
     if len(EC1_list) > 1:
         sum+=1
 
-
+# Extracting EC values from dataset
 for i in range(0,len(EC_total1)):
     EC_labels_temp = []
     if EC_total1[i] != '[]':
@@ -102,13 +104,14 @@ for i in range(0,len(EC_total1)):
         EC_labels_temp.append(EC4)
 
         EC_labels.append(EC_labels_temp)
-    else:
+    else: # X represents missing EC num
         EC1_labels.append('x')
         EC2_labels.append('x')
         EC3_labels.append('x')
         EC4_labels.append('x')
         EC_labels.append([])
 
+# Encoding the labels
 le_1 = preprocessing.LabelEncoder()
 le_1.fit(EC1_labels)
 EC1_labels_encoded = le_1.transform(EC1_labels)
@@ -135,6 +138,7 @@ Blank EC4: 260220
 #     if a == 'x':
 #         count+=1
 
+# Cleaning the dataset
 text = []
 labels = []
 check = []
@@ -150,6 +154,7 @@ text_3 = text
 labels_3 = labels
 ####################################################
 
+# Creating one hot encoded labels
 labels_OHE = []
 label_num = len(list(set(labels_3)))
 for i in range(0, len(labels_3)):
@@ -157,7 +162,7 @@ for i in range(0, len(labels_3)):
     l_arr[labels_3[i]] = int(1)
     labels_OHE.append(l_arr)
 
-
+# sanity check
 counts = np.zeros((label_num), int)
 for i in range(0, len(labels_3)):
     counts[labels_3[i]] += 1
@@ -176,6 +181,7 @@ EC1_labels = []
 EC2_labels = []
 EC3_labels = []
 EC4_labels = []
+# Extracting EC values from dataset
 for i in range(0,len(EC_total1)):
     EC_labels_temp = []
     if EC_total1[i] != '[]':
@@ -219,15 +225,17 @@ for i in range(0,len(EC_total1)):
         EC_labels_temp.append(EC4)
 
         EC_labels.append(EC_labels_temp)
-    else:
+    else: # X represents missing EC num
         EC1_labels.append('x')
         EC2_labels.append('x')
         EC3_labels.append('x')
         EC4_labels.append('x')
         EC_labels.append([])
-
+        
+# Encoding the labels
 # le_1 = preprocessing.LabelEncoder()
 # le_1.fit(EC1_labels)
+
 EC1_labels_encoded = le_1.transform(EC1_labels)
 # le_2 = preprocessing.LabelEncoder()
 # le_2.fit(EC2_labels)
@@ -254,6 +262,7 @@ for a in EC1_labels:
     if a == 'x':
         count+=1
 
+# Cleaning the dataset
 text = []
 labels = []
 check = []
@@ -268,7 +277,7 @@ for i in range(0,len(EC1_labels_encoded)):
 text_3 = text
 labels_3 = labels
 ####################################################
-
+# Creating one hot encoded labels
 labels_OHE = []
 label_num = len(list(set(labels_3)))
 
@@ -288,6 +297,7 @@ labels_dev = labels_OHE
 # text_train, text_test, labels_train, labels_test = train_test_split(text_3, labels_OHE, stratify=labels_3, test_size=0.1)
 # # text_test1, text_test2, labels_test1, labels_test2 = train_test_split(text_test, labels_test, test_size=0.1)
 
+# Creating datasets
 dict_train = {'text':text_train,'labels':labels_train}
 dict_test = {'text':text_dev,'labels':labels_dev}
 ########################################################################################################################
@@ -300,9 +310,10 @@ class MyBertForSequenceClassification(BertPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
         self.num_labels = config.num_labels
-        self.config = config
+        self.config = config # Config file contains the hyperparameters and settings
 
         self.bert = BertModel(config)
+        # Introducing dropout
         classifier_dropout = (
             config.classifier_dropout if config.classifier_dropout is not None else config.hidden_dropout_prob
         )
@@ -348,6 +359,7 @@ class MyBertForSequenceClassification(BertPreTrainedModel):
             return_dict=return_dict,
         )
 
+        # Configuring pooling
         if self.config.use_pooler == 1:
             pooled_output = outputs[1]
         elif self.config.use_mean == 1:
@@ -366,6 +378,7 @@ class MyBertForSequenceClassification(BertPreTrainedModel):
         else:
             logits = self.classifier(pooled_output)
 
+        # Defining loss function
         loss = None
         if labels is not None:
             if self.config.problem_type is None:
@@ -405,13 +418,13 @@ class MyBertForSequenceClassification(BertPreTrainedModel):
             attentions=outputs.attentions,
         )
 
-
+# Defining tokenizer
 def tokenize_function(example):
 
     return tokenizer(example["text"], add_special_tokens=True, truncation=True, max_length=1024)
 
 
-
+# Defining evaluation criteria
 def compute_metrics(eval_preds):
     # print("PROBLEM!!!")
     metric = load_metric("accuracy")
@@ -428,6 +441,7 @@ model_type = "Rostlab/prot_bert_bfd"
 # model_type = "bert-base-uncased"
 # model_type = "distilbert-base-uncased"
 
+# Loading model:
 # do_lower_case = True
 do_lower_case = False
 tokenizer = BertTokenizer.from_pretrained(model_type, do_lower_case=do_lower_case)
@@ -487,11 +501,8 @@ config.intermediate_hidden_size = mode_hidden_map[mode]
 
 ########################################################################################################################
 ##################################################### Training: ##########################################################
-# num_epochs = 1
-# num_epochs = 10
+# Defining training parameters:
 num_epochs = 15
-# num_epochs = 100
-
 config.use_pooler = 0
 config.use_mean = 1
 
@@ -512,6 +523,7 @@ config.problem_type = "multi_label_classification"
 # freeze_layer_norm = 1
 # freeze_pooler = 1
 
+# Setting which layers to train
 freeze_positional = 0
 freeze_non_positional = 1
 freeze_attention = 1
@@ -536,6 +548,8 @@ ten_fold = 0
 # monitor_value = ''
 # initial_lr = 5e-6
 # initial_lr = 5e-5
+
+# Selecting Batch size:
 initial_lr = 5e-4
 if subject == 'iamp2l' or subject == 'iamppred':
     batch_size = 32
@@ -555,6 +569,7 @@ fold_range = [0]
 if ten_fold:
     fold_range = range(10)
 
+# Managing k-fold validation
 for fold in fold_range:
     model = None
     dataset = None
@@ -704,6 +719,7 @@ for fold in fold_range:
     #     del randomlist
 
 
+    # Tokenizing dataset:
     tokenized_datasets_train = dataset_train.map(tokenize_function, batched=True)
     tokenized_datasets_test = dataset_test.map(tokenize_function, batched=True)
     # all_data = tokenize_function(dataset_test)
@@ -748,6 +764,7 @@ for fold in fold_range:
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
     # data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer)
 
+    # Setting save paths
     timestr = time.strftime("%m%d-%H%M%S")
     save_dir = 'models/' + timestr + '/'
     while os.path.isdir(save_dir):
@@ -756,6 +773,7 @@ for fold in fold_range:
 
     os.makedirs(save_dir, exist_ok=True)
 
+    # Configuring model:
     model.resize_token_embeddings(len(tokenizer))
     training_args = TrainingArguments(num_train_epochs=num_epochs,output_dir=save_dir,
                                       per_device_train_batch_size=batch_size,
@@ -822,6 +840,7 @@ for fold in fold_range:
     # config = AutoConfig.from_pretrained("./models_random_EC1_EX/0805-135007")
     # model = MyBertForSequenceClassification.from_pretrained("./models_random_EC1_EX/0805-135007", config=config)
 
+    # Initializing trainer
     trainer = None
     trainer = Trainer(
         model,
@@ -837,15 +856,17 @@ for fold in fold_range:
     # Load checkpoint model:
     # checkpoint = torch.load("./models/0706-172025/checkpoint-4350/")
 
-
+    # Training the model
     trainer.train()
 
+    # Saving model states
     dirs = [x[0] for x in os.walk(save_dir)]
     for d in dirs:
         if 'checkpoint' in d:
             shutil.rmtree(d, ignore_errors='True')
     trainer.save_model()
 
+    # Evaluating the performance on the val set
     print(trainer.evaluate())
     # Loading saved model:
     # config = AutoConfig.from_pretrained("./models_main/0504-052935")
