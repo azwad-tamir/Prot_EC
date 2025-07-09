@@ -1,5 +1,6 @@
 # Prot_EC
 ## A Transformer Based Deep Learning System for Accurate Annotation of Enzyme Commission Numbers
+![ProtEC_pic](https://github.com/user-attachments/assets/01477563-db81-440a-9b93-064554d0525c)
 
 In this project a transformer based Deep Learning model has been developed that could predict the Enzyme commission Numbers of Enzymes from full scale sequences. The input
 of the model are enzyme protein sequences and the output are the four EC numbers.
